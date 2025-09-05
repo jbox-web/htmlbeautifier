@@ -10,10 +10,10 @@ spec = Gem::Specification.new do |s|
   s.homepage          = "http://github.com/threedaymonk/htmlbeautifier"
   s.license           = "MIT"
 
-  s.files             = %w(Rakefile README.md) + Dir.glob("{bin,test,lib}/**/*")
-  s.executables       = Dir["bin/**"].map { |f| File.basename(f) }
+  s.files             = %w(Rakefile README.md) + Dir.glob("{exe,test,lib}/**/*")
 
-  s.require_paths     = ["lib"]
+  s.bindir      = 'exe'
+  s.executables = ['htmlbeautifier']
 
   s.required_ruby_version = '>= 2.6.0'
 
@@ -23,4 +23,3 @@ spec = Gem::Specification.new do |s|
   s.add_development_dependency "rubocop-rspec", "~> 2"
   s.add_development_dependency "rubocop-rake", "~> 0.6"
 end
-

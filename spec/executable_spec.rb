@@ -4,7 +4,7 @@ require "shellwords"
 require "fileutils"
 require "open3"
 
-describe "bin/htmlbeautifier" do
+describe "exe/htmlbeautifier" do
   before do
     FileUtils.mkdir_p path_to("tmp")
   end
@@ -24,7 +24,7 @@ describe "bin/htmlbeautifier" do
   def command
     "ruby -I%s %s" % [
       escape(path_to("lib")),
-      escape(path_to("bin", "htmlbeautifier"))
+      escape(path_to("exe", "htmlbeautifier"))
     ]
   end
 
