@@ -33,7 +33,7 @@ module HtmlBeautifier
       raise "Unmatched sequence" unless method
 
       receiver.__send__(method, *extract_params(@scanner))
-    rescue => e
+    rescue => e # rubocop:disable Style/RescueStandardError
       raise "#{e.message} on line #{source_line_number}"
     end
 

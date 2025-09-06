@@ -21,9 +21,7 @@ module HtmlBeautifier
   # to keep in output.
   #
   def self.beautify(html, options = {})
-    if options[:tab_stops]
-      options[:indent] = " " * options[:tab_stops]
-    end
+    options[:indent] = " " * options[:tab_stops] if options[:tab_stops]
     String.new.tap { |output|
       HtmlParser.new.scan html.to_s, Builder.new(output, options)
     }

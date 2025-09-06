@@ -1,18 +1,45 @@
-inherit_mode:
-  merge:
-    - Exclude
-
-require:
-  - standard
+---
+plugins:
   - rubocop-rake
-
-inherit_gem:
-  standard: config/base.yml
+  - rubocop-rspec
 
 AllCops:
-  NewCops: disable
-  SuggestExtensions: false
-  TargetRubyVersion: 3.2
+  NewCops: enable
   Exclude:
-    - '**/*.gemspec'
-    - '**/Rakefile'
+    - bin/*
+    - exe/*
+    - spec/**/*
+
+Gemspec/RequireMFA:
+  Enabled: false
+
+#########
+# STYLE #
+#########
+
+Style/Documentation:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/RegexpLiteral:
+  EnforcedStyle: percent_r
+
+Style/BlockDelimiters:
+  EnforcedStyle: semantic
+
+Style/FormatString:
+  EnforcedStyle: percent
+
+Style/FormatStringToken:
+  EnforcedStyle: unannotated
+
+Style/NumericPredicate:
+  EnforcedStyle: comparison
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+
+Style/Alias:
+  EnforcedStyle: prefer_alias_method

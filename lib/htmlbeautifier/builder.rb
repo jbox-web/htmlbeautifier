@@ -4,7 +4,7 @@ require "htmlbeautifier/parser"
 require "htmlbeautifier/ruby_indenter"
 
 module HtmlBeautifier
-  class Builder
+  class Builder # rubocop:disable Metrics/ClassLength
     DEFAULT_OPTIONS = {
       indent: "  ",
       initial_level: 0,
@@ -43,7 +43,7 @@ module HtmlBeautifier
     end
 
     def emit(*strings)
-      strings_join = strings.join("")
+      strings_join = strings.join
       @output << "\n" if @new_line && !@empty
       @output << (@tab * @level) if @new_line && !strings_join.strip.empty?
       @output << strings_join

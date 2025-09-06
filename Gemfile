@@ -9,6 +9,5 @@ gem "rake"
 gem "rspec"
 
 # Dev tools / linter
-gem "standard",      require: false
-gem "rubocop-rspec", require: false
 gem "rubocop-rake",  require: false
+gem "rubocop-rspec", require: false
