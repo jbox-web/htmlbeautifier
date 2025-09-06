@@ -1,6 +1,8 @@
-require File.expand_path("../lib/htmlbeautifier/version", __FILE__)
+# frozen_string_literal: true
 
-spec = Gem::Specification.new do |s|
+require_relative "lib/htmlbeautifier/version"
+
+Gem::Specification.new do |s|
   s.name              = "htmlbeautifier"
   s.version           = HtmlBeautifier::VERSION::STRING
   s.summary           = "HTML/ERB beautifier"
