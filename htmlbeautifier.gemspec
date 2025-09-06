@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.description = "A normaliser/beautifier for HTML that also understands embedded Ruby."
   s.license     = "MIT"
 
-  s.required_ruby_version = ">= 2.6.0"
+  s.required_ruby_version = ">= 3.2.0"
 
   s.files = Dir["README.md", "LICENSE", "lib/**/*.rb", "exe/*"]
 

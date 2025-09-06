@@ -4,12 +4,12 @@ require "htmlbeautifier/parser"
 
 module HtmlBeautifier
   class HtmlParser < Parser
-    ELEMENT_CONTENT = %r{ (?:<%.*?%>|[^>])* }mx.freeze
+    ELEMENT_CONTENT = %r{ (?:<%.*?%>|[^>])* }mx
 
     HTML_VOID_ELEMENTS = %r{(?:
       area | base | br | col | command | embed | hr | img | input | keygen |
       link | meta | param | source | track | wbr
-    )}mix.freeze
+    )}mix
 
     HTML_BLOCK_ELEMENTS = %r{(?:
       address | article | aside | audio | blockquote | canvas | dd | details |
@@ -17,7 +17,7 @@ module HtmlBeautifier
       h1 | h2 | h3 | h4 | h5 | h6 | header | hr | li | menu | noframes |
       noscript | ol | p | pre | section | table | tbody | td | tfoot | th |
       thead | tr | ul | video
-    )}mix.freeze
+    )}mix
 
     MAPPINGS = [
       [%r{(<%-?=?)(.*?)(-?%>)}om,                               :embed],

@@ -9,9 +9,9 @@ module HtmlBeautifier
     RUBY_INDENT = %r{
       ^ ( #{INDENT_KEYWORDS.join('|')} )\b
       | \b ( do | \{ ) ( \s* \| [^|]+ \| )? $
-    }xo.freeze
+    }xo
 
-    RUBY_OUTDENT = %r{ ^ ( #{OUTDENT_KEYWORDS.join('|')} | \} ) \b }xo.freeze
+    RUBY_OUTDENT = %r{ ^ ( #{OUTDENT_KEYWORDS.join('|')} | \} ) \b }xo
 
     def outdent?(lines)
       lines.first =~ RUBY_OUTDENT
