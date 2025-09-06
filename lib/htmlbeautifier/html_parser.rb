@@ -5,10 +5,12 @@ require "htmlbeautifier/parser"
 module HtmlBeautifier
   class HtmlParser < Parser
     ELEMENT_CONTENT = %r{ (?:<%.*?%>|[^>])* }mx.freeze
+
     HTML_VOID_ELEMENTS = %r{(?:
       area | base | br | col | command | embed | hr | img | input | keygen |
       link | meta | param | source | track | wbr
     )}mix.freeze
+
     HTML_BLOCK_ELEMENTS = %r{(?:
       address | article | aside | audio | blockquote | canvas | dd | details |
       dir | div | dl | dt | fieldset | figcaption | figure | footer | form |
