@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 2.6.0'
 
-  s.files = Dir['README.md', 'lib/**/*.rb', 'exe/*']
+  s.files = Dir['README.md', 'LICENSE', 'lib/**/*.rb', 'exe/*']
 
   s.bindir      = 'exe'
   s.executables = ['htmlbeautifier']
