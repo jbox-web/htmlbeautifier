@@ -8,10 +8,13 @@ Gemfile.lock
 *.gem
 
 # Ignore temp files
-/tmp
+tmp/
 
 # Ignore Ruby version
 .ruby-version
 
 # Ignore MacOS files
 .DS_Store
+
+# Ignore coverage files
+coverage/

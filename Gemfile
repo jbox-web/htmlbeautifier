@@ -7,6 +7,7 @@ gemspec
 # Dev libs
 gem "rake"
 gem "rspec"
+gem "simplecov"
 
 # Dev tools / linter
 gem "rubocop",             require: false
