@@ -4,7 +4,7 @@ require "shellwords"
 require "fileutils"
 require "open3"
 
-describe "exe/htmlbeautifier" do
+RSpec.describe "exe/htmlbeautifier" do
   before do
     FileUtils.mkdir_p path_to("tmp")
   end

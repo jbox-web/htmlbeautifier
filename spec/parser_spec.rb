@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require "htmlbeautifier/parser"
+require "spec_helper"
 
-describe HtmlBeautifier::Parser do
+RSpec.describe HtmlBeautifier::Parser do
   let(:receiver_class) {
     Class.new do
       attr_reader :sequence

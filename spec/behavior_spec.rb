@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require "htmlbeautifier"
+require "spec_helper"
 
-describe HtmlBeautifier do
+RSpec.describe HtmlBeautifier do
   it "ignores HTML fragments in embedded ERB" do
     source = code <<~HTML
       <div>
