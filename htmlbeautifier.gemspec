@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 2.6.0'
 
-  s.files = %w(Rakefile README.md) + Dir.glob("{exe,test,lib}/**/*")
+  s.files = Dir['README.md', 'lib/**/*.rb', 'exe/*']
 
   s.bindir      = 'exe'
   s.executables = ['htmlbeautifier']
