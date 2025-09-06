@@ -3,21 +3,22 @@
 require_relative "lib/htmlbeautifier/version"
 
 Gem::Specification.new do |s|
-  s.name              = "htmlbeautifier"
-  s.version           = HtmlBeautifier::VERSION::STRING
-  s.summary           = "HTML/ERB beautifier"
-  s.description       = "A normaliser/beautifier for HTML that also understands embedded Ruby."
-  s.author            = "Paul Battley"
-  s.email             = "pbattley@gmail.com"
-  s.homepage          = "http://github.com/threedaymonk/htmlbeautifier"
-  s.license           = "MIT"
+  s.name        = "htmlbeautifier"
+  s.version     = HtmlBeautifier::VERSION::STRING
+  s.platform    = Gem::Platform::RUBY
+  s.author      = "Paul Battley"
+  s.email       = "pbattley@gmail.com"
+  s.homepage    = "http://github.com/threedaymonk/htmlbeautifier"
+  s.summary     = "HTML/ERB beautifier"
+  s.description = "A normaliser/beautifier for HTML that also understands embedded Ruby."
+  s.license     = "MIT"
 
-  s.files             = %w(Rakefile README.md) + Dir.glob("{exe,test,lib}/**/*")
+  s.required_ruby_version = '>= 2.6.0'
+
+  s.files = %w(Rakefile README.md) + Dir.glob("{exe,test,lib}/**/*")
 
   s.bindir      = 'exe'
   s.executables = ['htmlbeautifier']
-
-  s.required_ruby_version = '>= 2.6.0'
 
   s.add_development_dependency "rake", "~> 13"
   s.add_development_dependency "rspec", "~> 3"
