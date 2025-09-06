@@ -12,6 +12,12 @@ RSpec.describe HtmlBeautifier do
       <script src="/javascripts/prototype.js" type="text/javascript"></script>
       <link rel="stylesheet" type="text/css" href="/stylesheets/screen.css" media="screen"/>
       <!--[if IE 6]>
+      <xml>
+      <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+      </xml>
       <link rel="stylesheet" href="/stylesheets/screen_ie6.css" type="text/css" />
       <![endif]-->
       <title>Title Goes Here</title>
@@ -58,6 +64,12 @@ RSpec.describe HtmlBeautifier do
           <script src="/javascripts/prototype.js" type="text/javascript"></script>
           <link rel="stylesheet" type="text/css" href="/stylesheets/screen.css" media="screen"/>
           <!--[if IE 6]>
+            <xml>
+              <o:OfficeDocumentSettings>
+                <o:AllowPNG/>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+              </o:OfficeDocumentSettings>
+            </xml>
             <link rel="stylesheet" href="/stylesheets/screen_ie6.css" type="text/css" />
           <![endif]-->
           <title>Title Goes Here</title>
