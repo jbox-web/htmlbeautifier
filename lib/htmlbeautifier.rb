@@ -22,7 +22,7 @@ module HtmlBeautifier
   #
   def self.beautify(html, options = {})
     options[:indent] = " " * options[:tab_stops] if options[:tab_stops]
-    String.new.tap { |output|
+    (+"").tap { |output|
       HtmlParser.new.scan html.to_s, Builder.new(output, options)
     }
   end

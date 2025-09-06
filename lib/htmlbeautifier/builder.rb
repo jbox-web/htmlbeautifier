@@ -93,7 +93,7 @@ module HtmlBeautifier
 
     def standalone_element(elem)
       emit elem
-      new_line if elem =~ %r{^<br[^\w]}
+      new_line if %r{^<br[^\w]}.match?(elem)
     end
 
     def close_element(elem)
