@@ -1,4 +1,17 @@
-*.gem
+# Ignore bundler config.
+.bundle/
+
+# Ignore Gemfile.lock
 Gemfile.lock
+
+# Ignore builded gem
+*.gem
+
+# Ignore temp files
 /tmp
+
+# Ignore Ruby version
 .ruby-version
+
+# Ignore MacOS files
+.DS_Store
