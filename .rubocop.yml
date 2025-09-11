@@ -10,7 +10,6 @@ AllCops:
   Exclude:
     - bin/*
     - exe/*
-    - spec/**/*
 
 Gemspec/RequireMFA:
   Enabled: false
@@ -45,3 +44,14 @@ Style/TrailingCommaInArrayLiteral:
 
 Style/Alias:
   EnforcedStyle: prefer_alias_method
+
+
+#########
+# RSPEC #
+#########
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false

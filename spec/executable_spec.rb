@@ -4,7 +4,7 @@ require "shellwords"
 require "fileutils"
 require "open3"
 
-RSpec.describe "exe/htmlbeautifier" do
+RSpec.describe "exe/htmlbeautifier" do # rubocop:disable RSpec/DescribeClass
   before do
     FileUtils.mkdir_p path_to("tmp")
   end
@@ -24,7 +24,7 @@ RSpec.describe "exe/htmlbeautifier" do
   def command
     "ruby -I%s %s" % [
       escape(path_to("lib")),
-      escape(path_to("exe", "htmlbeautifier"))
+      escape(path_to("exe", "htmlbeautifier")),
     ]
   end
 
