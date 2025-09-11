@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "htmlbeautifier/parser"
-
 module HtmlBeautifier
   class HtmlParser < Parser
     ELEMENT_CONTENT = %r{ (?:<%.*?%>|[^>])* }mx

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "lib/htmlbeautifier/version"
+require_relative "lib/html_beautifier/version"
 
 Gem::Specification.new do |s|
   s.name        = "htmlbeautifier"
@@ -19,4 +19,6 @@ Gem::Specification.new do |s|
 
   s.bindir      = "exe"
   s.executables = ["htmlbeautifier"]
+
+  s.add_dependency "zeitwerk"
 end

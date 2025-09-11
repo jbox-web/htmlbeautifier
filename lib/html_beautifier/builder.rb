@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "htmlbeautifier/parser"
-require "htmlbeautifier/ruby_indenter"
-
 module HtmlBeautifier
   class Builder # rubocop:disable Metrics/ClassLength
     DEFAULT_OPTIONS = {

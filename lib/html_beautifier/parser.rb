@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "strscan"
-
 module HtmlBeautifier
   class Parser
     def initialize
