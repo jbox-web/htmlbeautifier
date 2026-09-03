@@ -5,16 +5,59 @@ require "htmlbeautifier"
 require "optparse"
 require "fileutils"
 require "stringio"
+require "tempfile"
+
+executable = File.basename(__FILE__)
 
 def beautify(name, input, output, options)
   output.puts HtmlBeautifier.beautify(input, options)
+rescue SystemCallError
+  # Writing failed, the document did not: a broken pipe or a full disk must
+  # keep its own class instead of being reported as a parse error.
+  raise
 rescue => e
   raise "Error parsing #{name}: #{e}"
 end
 
-executable = File.basename(__FILE__)
+# The locale decides Ruby's default external encoding, and under LANG=C - cron,
+# git hooks, a bare CI container - that is US-ASCII, which makes every accented
+# template fail to read. The input is UTF-8 whatever the caller's locale says.
+def read_source(path)
+  File.read(path, encoding: "UTF-8")
+end
+
+# Rewrites path in place, keeping the mode, the ownership and the symlink
+# identity of the original. The temporary file has an unpredictable name and is
+# created with O_EXCL in the target's own directory, so it can neither be
+# guessed nor be made to follow a symlink planted by someone else.
+def rewrite(path, input, options)
+  target = File.realpath(path)
+  original = File.stat(target)
+  renamed = false
+  Tempfile.create([File.basename(target), ".tmp"], File.dirname(target)) do |file|
+    beautify path, input, file, options
+    file.flush
+    file.chmod original.mode & 0o7777
+    begin
+      file.chown original.uid, original.gid
+    rescue Errno::EPERM
+      # Only the superuser may give a file away; keeping our own ownership is
+      # the correct outcome for an unprivileged run.
+    end
+    File.rename file.path, target
+    renamed = true
+  end
+  renamed
+end
+
+def positive_integer(option, value)
+  return value if value >= 0
+
+  abort "#{File.basename($PROGRAM_NAME)}: #{option} must be zero or greater"
+end
 
 options = {indent: "  "}
+lint_only = false
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: #{executable} [options] [file ...]"
   opts.separator <<~STRING
@@ -31,9 +74,9 @@ parser = OptionParser.new do |opts|
   STRING
   opts.on(
     "-t", "--tab-stops NUMBER", Integer,
-    "Set number of spaces per indent (default #{options[:tab_stops]})"
+    "Set number of spaces per indent (default 2)"
   ) do |num|
-    options[:indent] = " " * num
+    options[:indent] = " " * positive_integer("--tab-stops", num)
   end
   opts.on(
     "-T", "--tab",
@@ -45,26 +88,26 @@ parser = OptionParser.new do |opts|
     "-i", "--indent-by NUMBER", Integer,
     "Indent the output by NUMBER steps (default 0)."
   ) do |num|
-    options[:initial_level] = num
+    options[:initial_level] = positive_integer("--indent-by", num)
   end
   opts.on(
     "-e", "--stop-on-errors",
     "Stop when invalid nesting is encountered in the input"
-  ) do |num|
-    options[:stop_on_errors] = num
+  ) do |flag|
+    options[:stop_on_errors] = flag
   end
   opts.on(
     "-b", "--keep-blank-lines NUMBER", Integer,
     "Set number of consecutive blank lines"
   ) do |num|
-    options[:keep_blank_lines] = num
+    options[:keep_blank_lines] = positive_integer("--keep-blank-lines", num)
   end
   opts.on(
     "-l", "--lint-only",
     "Lint only, error on files which would be modified",
     "This is not available when reading from standard input"
-  ) do |num|
-    options[:lint_only] = num
+  ) do |flag|
+    lint_only = flag
   end
   opts.on(
     "-v", "--version",
@@ -85,28 +128,42 @@ end
 parser.parse!
 
 if ARGV.any?
-  failures = []
+  unformatted = []
+  errors = []
+  # Every file is attempted: one unreadable or badly nested file must not stop
+  # the batch, and the failures are reported together at the end with a
+  # non-zero status, so a caller cannot mistake a partial run for a clean one.
   ARGV.each do |path|
-    input = File.read(path)
-    if options[:lint_only]
+    input = read_source(path)
+    if lint_only
       output = StringIO.new
       beautify path, input, output, options
-      failures << path unless input == output.string
+      unformatted << path unless input == output.string
     else
-      temppath = "#{path}.tmp"
-      File.open(temppath, "w") do |file|
-        beautify path, input, file, options
-      end
-      FileUtils.mv temppath, path
+      rewrite path, input, options
     end
+  rescue Errno::ENOENT, Errno::EISDIR, Errno::EACCES, Errno::ELOOP => e
+    errors << "#{path}: #{e.message.sub(%r{ @ .*\z}, "")}"
+  rescue ArgumentError, RuntimeError => e
+    errors << e.message
   end
-  unless failures.empty?
+
+  unless unformatted.empty?
     warn [
       "Lint failed - files would be modified:",
-      *failures
+      *unformatted
     ].join("\n")
-    exit 1
   end
+  errors.each { |message| warn "#{executable}: #{message}" }
+  exit 1 unless unformatted.empty? && errors.empty?
 else
-  beautify "standard input", $stdin.read, $stdout, options
+  abort "#{executable}: --lint-only requires file arguments" if lint_only
+
+  begin
+    beautify "standard input", $stdin.set_encoding("UTF-8").read, $stdout, options
+  rescue Errno::EPIPE
+    # A closed downstream pipe (htmlbeautifier < file | head) is a normal end,
+    # not a failure worth a backtrace.
+    exit 0
+  end
 end

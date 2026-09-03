@@ -158,4 +158,121 @@ RSpec.describe "exe/htmlbeautifier" do # rubocop:disable RSpec/DescribeClass
 
     expect(read(path)).to eq(expected)
   end
+
+  describe "in-place rewriting" do
+    it "preserves the file mode" do
+      path = path_to("tmp", "mode.html")
+      write path, "<p>\nfoo\n</p>"
+      File.chmod 0o600, path
+
+      system "%s %s" % [command, escape(path)]
+
+      expect(File.stat(path).mode & 0o777).to eq(0o600)
+    end
+
+    it "writes through a symlink instead of replacing it" do
+      target = path_to("tmp", "target.html")
+      link = path_to("tmp", "link.html")
+      write target, "<p>\nfoo\n</p>"
+      FileUtils.rm_f link
+      File.symlink target, link
+
+      system "%s %s" % [command, escape(link)]
+
+      expect(File.symlink?(link)).to be(true)
+      expect(read(target)).to eq("<p>\n  foo\n</p>\n")
+    end
+
+    it "leaves no temporary file behind when parsing fails" do
+      path = path_to("tmp", "leftover.html")
+      FileUtils.rm_f Dir[path_to("tmp", "leftover.html*")]
+      write path, "</p>"
+
+      Open3.capture3("%s --stop-on-errors %s" % [command, escape(path)])
+
+      expect(Dir[path_to("tmp", "leftover.html*")]).to eq([path])
+    end
+  end
+
+  describe "error reporting" do
+    it "processes the remaining files after one fails" do
+      first = path_to("tmp", "first.html")
+      bad = path_to("tmp", "bad-nesting.html")
+      last = path_to("tmp", "last.html")
+      write first, "<div>\n<p>x</p>\n</div>"
+      write bad, "</p>"
+      write last, "<div>\n<p>y</p>\n</div>"
+
+      _stdout, stderr, status = Open3.capture3(
+        "%s --stop-on-errors %s %s %s" %
+          [command, escape(first), escape(bad), escape(last)]
+      )
+
+      expect(read(last)).to eq("<div>\n  <p>y</p>\n</div>\n")
+      expect(status.exitstatus).to eq(1)
+      expect(stderr).to include("bad-nesting.html")
+    end
+
+    it "reports a missing file without a backtrace" do
+      _stdout, stderr, status = Open3.capture3(
+        "%s %s" % [command, escape(path_to("tmp", "no-such-file.html"))]
+      )
+
+      expect(status.exitstatus).to eq(1)
+      expect(stderr).to include("no-such-file.html")
+      expect(stderr).not_to match(%r{:\d+:in })
+    end
+
+    it "rejects a negative number of tab stops" do
+      path = path_to("tmp", "negative.html")
+      write path, "<p>\nfoo\n</p>"
+
+      _stdout, stderr, status = Open3.capture3(
+        "%s --tab-stops=-2 %s" % [command, escape(path)]
+      )
+
+      expect(status.exitstatus).to eq(1)
+      expect(stderr).to include("must be zero or greater")
+    end
+  end
+
+  describe "standard input" do
+    it "fails rather than ignoring --lint-only" do
+      _stdout, stderr, status = Open3.capture3(
+        "%s --lint-only" % command, stdin_data: "<div><p></p></div>\n"
+      )
+
+      expect(status.exitstatus).to eq(1)
+      expect(stderr).to include("--lint-only")
+    end
+
+    it "exits quietly when the downstream pipe is closed" do
+      path = path_to("tmp", "large.html")
+      write path, "<p>x</p>\n" * 20_000
+
+      _stdout, stderr, _status = Open3.capture3(
+        "%s < %s | head -2" % [command, escape(path)]
+      )
+
+      expect(stderr).to eq("")
+    end
+
+    it "reads UTF-8 regardless of the locale" do
+      path = path_to("tmp", "utf8.html")
+      write path, "<p>\ncafé\n</p>"
+
+      _stdout, _stderr, status = Open3.capture3(
+        { "LANG" => "C", "LC_ALL" => "C" }, "%s %s" % [command, escape(path)]
+      )
+
+      expect(status.exitstatus).to eq(0)
+      expect(read(path)).to eq("<p>\n  café\n</p>\n")
+    end
+  end
+
+  it "displays the default number of tab stops in its help" do
+    stdout, _stderr, _status = Open3.capture3("%s --help" % command)
+
+    expect(stdout).to include("(default 2)")
+  end
 end
