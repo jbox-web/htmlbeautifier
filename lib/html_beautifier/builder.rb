@@ -10,12 +10,14 @@ module HtmlBeautifier
     }.freeze
 
     def initialize(output, options = {})
-      options = DEFAULT_OPTIONS.merge(options)
+      options = DEFAULT_OPTIONS.merge(validated(options))
       @tab = options[:indent]
       @stop_on_errors = options[:stop_on_errors]
       @level = options[:initial_level]
       @keep_blank_lines = options[:keep_blank_lines]
-      @new_line = false
+      # An indented document must have its very first line indented too, which
+      # only happens if a new line is considered pending from the start.
+      @new_line = @level > 0
       @empty = true
       @ie_cc_levels = []
       @output = output
@@ -23,6 +25,15 @@ module HtmlBeautifier
     end
 
     private
+
+    # A misspelled key would otherwise be merged away in silence, and the
+    # option it was meant to set would look like a bug in the formatter.
+    def validated(options)
+      unknown = options.keys - DEFAULT_OPTIONS.keys
+      raise ArgumentError, "unknown option(s): #{unknown.join(', ')}" unless unknown.empty?
+
+      options
+    end
 
     def error(text)
       return unless @stop_on_errors
@@ -41,6 +52,10 @@ module HtmlBeautifier
 
     def emit(*strings)
       strings_join = strings.join
+      # Trailing blanks would sit at the end of a line on this pass and be
+      # absorbed by new_lines on the next one, which is what made the output
+      # non-idempotent. @output is the string built by HtmlBeautifier.beautify.
+      @output.sub!(%r{[ \t]+\z}, "") if @new_line && !@empty
       @output << "\n" if @new_line && !@empty
       @output << (@tab * @level) if @new_line && !strings_join.strip.empty?
       @output << strings_join
@@ -67,12 +82,14 @@ module HtmlBeautifier
 
     def emit_reindented_block_content(code)
       lines = code.strip.split(%r{\n})
-      indentation = foreign_block_indentation(code)
+      # The pattern is invariant in the loop, so it is compiled once rather
+      # than on every line of the block.
+      indentation = %r{^#{foreign_block_indentation(code)}}
 
       indent
       new_line
       lines.each do |line|
-        emit line.rstrip.sub(%r{^#{indentation}}, "")
+        emit line.rstrip.sub(indentation, "")
         new_line
       end
       outdent
@@ -90,7 +107,7 @@ module HtmlBeautifier
 
     def standalone_element(elem)
       emit elem
-      new_line if %r{^<br[^\w]}.match?(elem)
+      new_line if %r{^<br[^\w]}i.match?(elem)
     end
 
     def close_element(elem)
@@ -135,6 +152,17 @@ module HtmlBeautifier
       new_line
     end
 
-    alias_method :text, :emit
+    # Source text may start with whitespace that new_lines would absorb on the
+    # next pass; dropping it here keeps the output a fixed point. Text that is
+    # nothing but whitespace at the start of a line is dropped entirely rather
+    # than emitted empty, which would consume the pending new line and leave
+    # the element that follows unindented. Foreign and preformatted blocks do
+    # not go through here, so their own indentation is left untouched.
+    def text(content)
+      return emit(content) unless @new_line
+
+      content = content.lstrip
+      emit(content) unless content.empty?
+    end
   end
 end

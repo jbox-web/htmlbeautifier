@@ -15,7 +15,7 @@ RSpec.describe HtmlBeautifier::Parser do
         @sequence << [method, params]
       end
 
-      def respond_to_missing?
+      def respond_to_missing?(*)
         true
       end
     end
@@ -41,6 +41,25 @@ RSpec.describe HtmlBeautifier::Parser do
     parser.scan("foo(bar)", receiver)
     expected = [[:foo, %w[foo bar]]]
     expect(receiver.sequence).to eq(expected)
+  end
+
+  it "rejects a mapping the receiver cannot handle" do
+    parser = described_class.new { |p| p.map %r{foo}, :no_such_handler }
+
+    expect { parser.scan("foo", Object.new) }
+      .to raise_error(ArgumentError, %r{no_such_handler})
+  end
+
+  it "keeps the class of an error raised by the receiver" do
+    receiver = Class.new do
+      def boom(*)
+        raise ArgumentError, "negative argument"
+      end
+    end.new
+    parser = described_class.new { |p| p.map %r{foo}, :boom }
+
+    expect { parser.scan("foo", receiver) }
+      .to raise_error(ArgumentError, "negative argument on line 1")
   end
 
   context "when tracking source lines" do
@@ -69,7 +88,7 @@ RSpec.describe HtmlBeautifier::Parser do
     it "gives source so far" do
       parser = described_class.new { |p|
         p.map %r{(M+)}m, :append_new_source_so_far
-        p.map %r{([\s\n]+)}m, :space_or_newline
+        p.map %r{(\s+)}m, :space_or_newline
       }
       receiver = source_tracking_receiver_class.new(parser)
       parser.scan("M MM MMM", receiver)
@@ -79,7 +98,7 @@ RSpec.describe HtmlBeautifier::Parser do
     it "gives source line number" do
       parser = described_class.new { |p|
         p.map %r{(M+)}m, :append_new_source_line_number
-        p.map %r{([\s\n]+)}m, :space_or_newline
+        p.map %r{(\s+)}m, :space_or_newline
       }
       receiver = source_tracking_receiver_class.new(parser)
       parser.scan("M \n\nMM\nMMM", receiver)

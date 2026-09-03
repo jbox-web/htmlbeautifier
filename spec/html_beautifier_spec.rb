@@ -831,6 +831,19 @@ RSpec.describe HtmlBeautifier do
       end
     end
 
+    context "when a conditional comment is left open" do
+      it "raises with the source line when stop_on_errors is true" do
+        expect {
+          described_class.beautify("<p>x</p>\n<![endif]-->", stop_on_errors: true)
+        }.to raise_error(RuntimeError, "Unclosed conditional comment on line 2")
+      end
+
+      it "carries on when stop_on_errors is false" do
+        expect(described_class.beautify("<p>x</p>\n<![endif]-->"))
+          .to eq("<p>x</p>\n<![endif]-->")
+      end
+    end
+
     context "when stop_on_errors is false" do
       it "processes the rest of the document after the errant closing tag" do
         source = code <<~HTML
@@ -851,6 +864,155 @@ RSpec.describe HtmlBeautifier do
         HTML
         expect(described_class.beautify(source, stop_on_errors: false))
           .to eq(expected)
+      end
+    end
+
+    context "when a tag is split over several lines" do
+      it "indents a self-closing tag whose attributes are on the next line" do
+        source = code <<~HTML
+          <div>
+          <input
+              class="btn"
+            />
+          </div>
+        HTML
+        expected = code <<~HTML
+          <div>
+            <input
+              class="btn"
+            />
+          </div>
+        HTML
+        expect(described_class.beautify(source)).to eq(expected)
+      end
+
+      it "does not indent after a void element whose attributes are on the next line" do
+        source = code <<~HTML
+          <template>
+            <input
+              class="btn"
+            >
+          </template>
+        HTML
+        expect(described_class.beautify(source)).to eq(source)
+      end
+    end
+
+    context "when the document contains a bare angle bracket" do
+      it "treats < in text as text" do
+        source = code <<~HTML
+          <div>
+            <p>Only if 5 < 6</p>
+            <p>next</p>
+          </div>
+        HTML
+        expect(described_class.beautify(source)).to eq(source)
+      end
+
+      it "does not raise on an unmatched <" do
+        expect(described_class.beautify("5 < 6")).to eq("5 < 6")
+      end
+    end
+
+    context "when an attribute value contains >" do
+      it "does not end the tag early" do
+        source = code <<~HTML
+          <div foo="a>b"
+               bar="1">
+            <p>x</p>
+          </div>
+        HTML
+        expect(described_class.beautify(source)).to eq(source)
+      end
+
+      it "supports Stimulus action descriptors" do
+        source = code <<~HTML
+          <button data-action="click->hello#greet"
+                  type="button">
+            Greet
+          </button>
+        HTML
+        expect(described_class.beautify(source)).to eq(source)
+      end
+
+      it "handles an ERB tag immediately before the closing bracket" do
+        source = code <<~ERB
+          <select>
+          <option <%= link[:selected] ? "selected" : "" %>>
+          <%= link[:name] %>
+          </option>
+          </select>
+        ERB
+        expected = code <<~ERB
+          <select>
+            <option <%= link[:selected] ? "selected" : "" %>>
+              <%= link[:name] %>
+            </option>
+          </select>
+        ERB
+        expect(described_class.beautify(source)).to eq(expected)
+      end
+    end
+
+    context "when the output is fed back in" do
+      [
+        "<div>\n<p>x</p>\n</div>\n",
+        "  <p>x</p>",
+        "<p>x</p>  ",
+        "\n\n<div>\n<p>x</p>\n</div>\n\n",
+        "text<br>more",
+        "<div><br> <span>x</span></div>",
+        "<pre>x</pre> <span>y</span>",
+        "<script><br> <span>x</span>",
+      ].each do |source|
+        it "is idempotent for #{source.inspect}" do
+          once = described_class.beautify(source)
+
+          expect(described_class.beautify(once)).to eq(once)
+        end
+      end
+    end
+
+    context "with the options hash" do
+      it "does not modify the hash it was given" do
+        options = { tab_stops: 4 }
+
+        described_class.beautify("<p>x</p>", options)
+
+        expect(options).to eq({ tab_stops: 4 })
+      end
+
+      it "rejects an unknown option rather than ignoring it" do
+        expect { described_class.beautify("<p>x</p>", keep_blank_line: 2) }
+          .to raise_error(ArgumentError, %r{keep_blank_line})
+      end
+    end
+
+    context "when initial_level is set" do
+      it "indents a document that starts with text" do
+        expect(described_class.beautify("hello", initial_level: 2))
+          .to eq("    hello")
+      end
+    end
+
+    context "with an uppercase void element" do
+      it "adds a newline after <BR> as it does after <br>" do
+        expect(described_class.beautify("<p>a<BR>b</p>"))
+          .to eq("<p>a<BR>\n  b</p>")
+      end
+    end
+
+    context "with HTML5 sectioning elements" do
+      %w[main nav dialog hgroup search summary].each do |element|
+        it "treats <#{element}> as a block element" do
+          source = "<body><#{element}>x</#{element}></body>"
+          expected = code <<~HTML
+            <body>
+              <#{element}>x</#{element}>
+            </body>
+          HTML
+          expect(described_class.beautify(source)).to eq(expected)
+        end
       end
     end
   end

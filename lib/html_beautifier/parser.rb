@@ -12,6 +12,13 @@ module HtmlBeautifier
     end
 
     def scan(subject, receiver)
+      # Handlers are reached through __send__, so a mapping naming a method the
+      # receiver does not have would only fail on the first document that
+      # happens to contain the construct. Checking up front turns that into an
+      # immediate, explicit error.
+      missing = @maps.map(&:last).uniq.reject { |method| receiver.respond_to?(method, true) }
+      raise ArgumentError, "receiver cannot handle: #{missing.join(', ')}" unless missing.empty?
+
       @scanner = StringScanner.new(subject)
       dispatch(receiver) until @scanner.eos?
     end
@@ -32,7 +39,10 @@ module HtmlBeautifier
 
       receiver.__send__(method, *extract_params(@scanner))
     rescue => e # rubocop:disable Style/RescueStandardError
-      raise "#{e.message} on line #{source_line_number}"
+      # The line number is added, but the class and the original backtrace are
+      # kept: an ArgumentError coming from an option must not be reported as if
+      # the document were malformed.
+      raise e.class, "#{e.message} on line #{source_line_number}", e.backtrace
     end
 
     def extract_params(scanner)

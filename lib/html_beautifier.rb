@@ -29,9 +29,14 @@ module HtmlBeautifier
   # to keep in output.
   #
   def self.beautify(html, options = {})
-    options[:indent] = " " * options[:tab_stops] if options[:tab_stops]
+    options = options.dup
+    tab_stops = options.delete(:tab_stops)
+    options[:indent] = " " * tab_stops if tab_stops
+    # Leading and trailing whitespace is dropped up front rather than carried
+    # through the builder, where it would survive one pass and disappear on the
+    # next: the output of beautify must be a fixed point of beautify.
     (+"").tap do |output|
-      HtmlParser.new.scan(html.to_s, Builder.new(output, options))
+      HtmlParser.new.scan(html.to_s.strip, Builder.new(output, options))
     end
   end
 end
