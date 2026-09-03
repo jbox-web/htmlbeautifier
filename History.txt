@@ -1,3 +1,46 @@
+== Unreleased
+* Fix a crash on tags split over several lines: <input\n class="x"\n/> no
+  longer raises "Unmatched sequence".
+* Keep a > inside a quoted attribute value from ending the tag, which fixes
+  Stimulus descriptors such as data-action="click->hello#greet".
+* Treat a < that opens no tag as text instead of failing to parse.
+* Recognise dialog, hgroup, main, nav, search and summary as block elements.
+* Add a newline after <BR> as well as after <br>.
+* Apply initial_level to a document that starts with text.
+* Make the output a fixed point: beautifying twice now yields the same result,
+  including for documents with stray whitespace or an unclosed block.
+* Preserve the mode, ownership and symlink identity of a file rewritten in
+  place, and write through an unpredictable temporary file.
+* Leave no temporary file behind when parsing fails.
+* Carry on with the remaining files when one fails, and report every failure
+  at the end with a non-zero exit status.
+* Report an unreadable file with a message instead of a backtrace.
+* Fail instead of silently ignoring --lint-only when reading standard input.
+* Read input as UTF-8 whatever the locale says.
+* Exit quietly when the downstream pipe is closed.
+* Reject negative values for --tab-stops, --indent-by and --keep-blank-lines.
+* Reject unknown option keys instead of ignoring them, and stop modifying the
+  options hash passed by the caller.
+* Constrain the zeitwerk dependency to ~> 2.6.
+
+== 1.4.3 (2024-02-13)
+* Indent case statements.
+* Make README input and output clearer.
+
+== 1.4.2 (2022-04-05)
+* Add support for <details> with a Boolean attribute handled by ERB.
+* Remove relative_path_from call.
+
+== 1.4.1 (2021-12-05)
+* Add hyphen to the standalone element pattern.
+
+== 1.4.0 (2021-11-26)
+* Add --lint-only option, writing lint errors to stderr.
+* Add --version option.
+* Fix foreign block indentation issue.
+* Fix self-closing tags regex problems.
+* Drop support for unmaintained Ruby versions.
+
 == 1.3.1 (2017-05-04)
 * Fix erroneous additional indentation being applied to code in <script> and
   <style> sections.

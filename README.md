@@ -32,6 +32,26 @@ or to operate on standard input and output:
 $ htmlbeautifier < untidy.html.erb > formatted.html.erb
 ```
 
+#### Options
+
+| Option | Effect |
+| ------ | ------ |
+| `-t`, `--tab-stops NUMBER` | Number of spaces per indent (default 2) |
+| `-T`, `--tab` | Indent using tabs |
+| `-i`, `--indent-by NUMBER` | Indent the whole output by NUMBER steps (default 0) |
+| `-b`, `--keep-blank-lines NUMBER` | Number of consecutive blank lines to keep (default 0) |
+| `-e`, `--stop-on-errors` | Stop when invalid nesting is encountered, instead of carrying on |
+| `-l`, `--lint-only` | Do not write anything; exit 1 listing the files that would be modified |
+| `-v`, `--version` | Display the version and exit |
+| `-h`, `--help` | Display the help message and exit |
+
+`--lint-only` requires file arguments: it cannot report on standard input,
+where there is no file to name. When files are given, each one is attempted
+even if an earlier one fails, and the run exits 1 listing every failure.
+
+Files are rewritten through a temporary file in the same directory, keeping
+the mode, the ownership and the symlink identity of the original.
+
 ### In your code
 
 ```ruby
@@ -45,6 +65,19 @@ You can also specify how to indent (the default is two spaces):
 ```ruby
 beautiful = HtmlBeautifier.beautify(untidy_html_string, indent: "\t")
 ```
+
+The other options mirror the command-line flags. An unknown key raises
+`ArgumentError` rather than being ignored:
+
+| Option | Effect |
+| ------ | ------ |
+| `indent:` | String used for one indent level (default `"  "`) |
+| `initial_level:` | Indent the whole output by this many steps (default 0) |
+| `keep_blank_lines:` | Number of consecutive blank lines to keep (default 0) |
+| `stop_on_errors:` | Raise on invalid nesting instead of carrying on (default false) |
+
+Both the document and its formatted form are held in memory, so a very large
+template needs roughly twice its own size.
 
 ## Installation
 

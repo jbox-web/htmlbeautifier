@@ -20,5 +20,5 @@ Gem::Specification.new do |s|
   s.bindir      = "exe"
   s.executables = ["htmlbeautifier"]
 
-  s.add_dependency "zeitwerk"
+  s.add_dependency "zeitwerk", "~> 2.6"
 end
