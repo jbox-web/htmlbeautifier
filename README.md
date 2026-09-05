@@ -1,5 +1,10 @@
 # HTML Beautifier
 
+[![GitHub license](https://img.shields.io/github/license/jbox-web/htmlbeautifier.svg)](https://github.com/jbox-web/htmlbeautifier/blob/master/LICENSE)
+[![CI](https://github.com/jbox-web/htmlbeautifier/workflows/CI/badge.svg)](https://github.com/jbox-web/htmlbeautifier/actions)
+[![Maintainability](https://qlty.sh/gh/jbox-web/projects/htmlbeautifier/maintainability.svg)](https://qlty.sh/gh/jbox-web/projects/htmlbeautifier)
+[![Code Coverage](https://qlty.sh/gh/jbox-web/projects/htmlbeautifier/coverage.svg)](https://qlty.sh/gh/jbox-web/projects/htmlbeautifier)
+
 A normaliser/beautifier for HTML that also understands embedded Ruby.
 Ideal for tidying up Rails templates.
 
@@ -93,6 +98,10 @@ To use the gem with Bundler, add to your `Gemfile`:
 ```ruby
 gem 'htmlbeautifier'
 ```
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the list of changes in each release.
 
 ## Contributing
 
